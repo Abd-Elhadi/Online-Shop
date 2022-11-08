@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const errorController = require('./controllers/error');
-const mongoConnect = require('./util/database');
+const mongoConnect = require('./util/database').mongoConnect;
 // const sequelize = require('./util/database');
 // const Product = require('./models/product');
 // const User = require('./models/user');
@@ -18,7 +18,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-// const adminRoutes = require('./routes/admin');
+const adminRoutes = require('./routes/admin');
 // const shopRoutes = require('./routes/shop');
 // const { use } = require('./routes/admin');
 
@@ -34,15 +34,18 @@ app.use((req, res, next) => {
     //     .catch(err => {
     //         console.log(err);
     //     });
+    console.log('I am here');
+    next();
 });
 
-// app.use('/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 // app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect((client) => {
-    console.log(client);
+mongoConnect(() => {
+    // console.log('Connected');
+    // console.log(client);
     app.listen(3000);
 });
 
