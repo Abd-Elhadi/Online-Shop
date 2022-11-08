@@ -17,7 +17,6 @@ class Product {
     return db.collection('products')
       .insertOne(this)
       .then(result => {
-        console.log('in then');
         console.log(result);
       })
       .catch(err => {

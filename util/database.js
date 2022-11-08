@@ -23,57 +23,33 @@
 //     });
 // };
 
-// let _db;
-
-// const { MongoClient, ServerApiVersion } = require('mongodb');
-// const uri = "mongodb+srv://new-admin:admin12345@cluster0.5kdpvq0.mongodb.net/?retryWrites=true&w=majority";
-
-// const mongoConnect = (callback) => {
-//     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-//     // const client = new MongoClient(uri);
-//     console.log('Connected');
-//     _db = client.db();
-//     callback(client);
-// }
-
-// const getDb = () => {
-//     if (_db) {
-//         // console.log(_db);
-//         return _db;
-//     }
-//     throw 'No database found!';
-// }
-
-// exports.mongoConnect = mongoConnect;
-// exports.getDb = getDb;
-
-
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 
-let connectionString = "mongodb+srv://new-admin:admin12345@cluster0.5kdpvq0.mongodb.net/?retryWrites=true&w=majority";
+let _db;
 
-let db
-
-const mongoConnect = () => {
-    mongodb.connect(
-        connectionString,
-        { useNewUrlParser: true, useUnifiedTopology: true },
-        function (err, client) {
-          db = client.db()
-          app.listen(5000)
-        }
-    )
+const mongoConnect = callback => {
+  MongoClient.connect(
+    "mongodb://new-admin:admin12345@ac-p7kh1b4-shard-00-00.5kdpvq0.mongodb.net:27017,ac-p7kh1b4-shard-00-01.5kdpvq0.mongodb.net:27017,ac-p7kh1b4-shard-00-02.5kdpvq0.mongodb.net:27017/?ssl=true&replicaSet=atlas-u5ux7l-shard-0&authSource=admin&retryWrites=true&w=majority"
+    // 'mongodb+srv://new-admin:admin12345@cluster0-ntrwp.mongodb.net/shop?retryWrites=true'
+  )
+    .then(client => {
+      console.log('Connected!');
+      _db = client.db();
+      callback();
+    })
+    .catch(err => {
+      console.log(err);
+      throw err;
+    });
 };
 
 const getDb = () => {
-    if (db) {
-        console.log(_db);
-        return db;
-    }
-    throw 'No database found!';
-}
+  if (_db) {
+    return _db;
+  }
+  throw 'No database found!';
+};
 
 exports.mongoConnect = mongoConnect;
 exports.getDb = getDb;
-
