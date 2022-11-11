@@ -10,23 +10,25 @@ class Product {
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
-    this.id = id;
+    this.id = id ? new mongodb.ObjectId(id) : null;
   }
 
   save() {
     const db = getDb();
     let dbOp;
-    if (this._id) {
+    console.log(this.id);
+    console.log(this._id);
+    if (this.id) {
       // Update the product
       dbOp = db
         .collection('products')
-        .updateOne({ _id: new mongodb.ObjectId(this._id) }, { $set: this });
+        .updateOne({ _id: this.id }, { $set: this });
     } else {
       dbOp = db.collection('products').insertOne(this);
     }
     return dbOp
       .then(result => {
-        console.log(result);
+        // console.log(result);
       })
       .catch(err => {
         console.log(err);
@@ -39,7 +41,7 @@ class Product {
       .collection('products')
       .find().toArray()
       .then(products => {
-        console.log(products);
+        // console.log(products);
         return products;
       })
       .catch(err => {
@@ -49,18 +51,33 @@ class Product {
 
   static findById(id) {
     const db = getDb();
-    console.log(id);
+    // console.log(id);
     return db
       .collection('products')
       .find({ _id: new mongodb.ObjectId(id) })
       .next()
       .then(product => {
-        console.log(product);
+        // console.log(product);
         return product;
       })
       .catch(err => {
         console.log(err);
       })
+  }
+
+  static removeById(prodId) {
+    const db = getDb();
+    // let's see
+    return db
+    .collection('products')
+    .deleteOne( {"_id": new mongodb.ObjectId(prodId)})
+    .then(result => {
+      console.log("Deleted");
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    console.log('Done?');
   }
 }
 

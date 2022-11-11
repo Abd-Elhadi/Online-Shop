@@ -1,5 +1,3 @@
-const mongodb = require('mongodb');
-
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
@@ -74,7 +72,7 @@ exports.getEditProduct = (req, res, next) => {
       if (!product) {
         return res.redirect('/');
       }
-      console.log(product);
+      // console.log(product);
       res.render('admin/edit-product', {
         pageTitle: 'Edit Product',
         path: '/admin/edit-product',
@@ -99,7 +97,7 @@ exports.postEditProduct = (req, res, next) => {
     updatedPrice, 
     updatedDescription, 
     updatedImgUrl, 
-    new mongodb.ObjectId(prodId)
+    prodId
   );
   product
     .save()
@@ -163,4 +161,14 @@ exports.getProducts = (req, res, next) => {
 //   })
 //   // Product.deleteById(prodId);
 // }
+exports.postDeleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
+  Product.removeById(prodId)
+  .then(() => {
+    res.redirect('/admin/products');
+  })
+  .catch(err => {
+    console.log(err);
+  });
+}
 
