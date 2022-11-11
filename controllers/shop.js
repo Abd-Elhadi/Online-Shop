@@ -27,7 +27,7 @@ exports.getProduct = (req, res, next) => {
   // });
   Product.findById(prodId)
     .then(product => {
-      console.log(product);
+      // console.log(product);
       res.render('shop/product-detail', {
         product: product,
         pageTitle: product.title,
