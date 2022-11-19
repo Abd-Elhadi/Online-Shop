@@ -59,6 +59,7 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
+  // console.log(req.user);
   // console.log(req.user.cart);
   req.user
   .populate('cart.items.prodId')
@@ -112,7 +113,7 @@ exports.postOrder = (req, res, next) => {
   req.user
   .populate('cart.items.prodId')
     .then(user => {
-      console.log(user.cart.items);
+      // console.log(user.cart.items);
       const products = user.cart.items.map(i => {
         return {
           quantity: i.quantity,
@@ -142,7 +143,7 @@ exports.postOrder = (req, res, next) => {
 exports.getOrders = (req, res, next) => {
   Order.find({ "user.userId": req.user._id })
   .then(orders => {
-    console.log(orders);
+    // console.log(orders);
     res.render('shop/orders', {
       path: '/orders',
       pageTitle: 'Your Orders',

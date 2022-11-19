@@ -44,17 +44,18 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-    
-    User.findById("63754fee7d611148776f043f")
+    if (!req.session.user){
+        return next();
+    }
+    User.findById(req.session.user._id)
         .then(user => {
-            // console.log(user.cart.items);
             req.user = user;
             next();
         })
         .catch(err => {
             console.log(err);
         });
-});
+})
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
