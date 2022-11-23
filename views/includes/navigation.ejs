@@ -29,6 +29,7 @@
         <ul class="main-header__item-list">
             <% if (!isAuthenticated) { %>
                 <li class="main-header__item">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Login</a>
                 </li>
                 <li class="main-header__item">
@@ -72,6 +73,7 @@
         <% } %>
         <% if (!isAuthenticated) { %>
             <li class="mobile-nav__item">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Login</a>
             </li>
             <li class="mobile-nav__item">
