@@ -67,7 +67,12 @@ exports.getSignup = (req, res, next) => {
     res.render('auth/signup', {
         path: '/signup',
         pageTitle: 'Signup',
-        errorMessage: message
+        errorMessage: message,
+        oldInput: {
+            email: "",
+            password: "",
+            confirmPassword: ""
+        }
     });
 };
 
@@ -76,7 +81,6 @@ exports.postLogin = (req, res, next) => {
     const password = req.body.password;
 
     const errors = validationResult(req);
-    console.log(errors.array())
     if (!errors.isEmpty()) {
         return res.status(422).render('auth/login', {
             path: '/login',
@@ -84,16 +88,6 @@ exports.postLogin = (req, res, next) => {
             errorMessage: errors.array()[0].msg
         });
     }
-
-    // const errors = validationResult(req);
-    // console.log(errors.array());
-    // if (!errors.isEmpty()) {
-    //     return res.render('auth/login', {
-    //         path: '/login',
-    //         pageTitle: 'Login',
-    //         errorMessage: errors.array()[0].msg
-    //     });
-    // }
 
     User.findOne({email: email})
     .then(user => {
@@ -133,7 +127,12 @@ exports.postSignup = (req, res, next) => {
         return res.status(422).render('auth/signup', {
             path: '/signup',
             pageTitle: 'Signup',
-            errorMessage: errors.array()[0].msg
+            errorMessage: errors.array()[0].msg,
+            oldInput: {
+                email: email, 
+                password: password, 
+                confirmPassword: req.body.confirmPassword
+            }
         });
     }
     bcrypt
