@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 const aws = require('aws-sdk');
+const user = require('../models/user');
 
 const ses = new aws.SES({region: "us-east-1"});
 
@@ -38,7 +39,7 @@ function sesTest(emailTo, emailFrom, subject, message) {
         ReplyToAddresses: [emailFrom]
     };
     return ses.sendEmail(params).promise();
-}
+};
 
 
 exports.getLogin = (req, res, next) => {
@@ -136,16 +137,16 @@ exports.postSignup = (req, res, next) => {
                                 Abdelhadi</p>`;
                 const subject = 'Successful signup!';
                 
-                sesTest(emailTo, emailFrom, subject, message)
-                .then(val => {
-                    console.log('got this back', val)
-                    console.log('Successful');
-                })
-                .catch(err => {
-                    console.log(err);
-                    console.log('Something went wrong');
-                });
                 res.redirect('login');
+                sesTest(emailTo, emailFrom, subject, message)
+                // .then(val => {
+                //     console.log('got this back', val)
+                //     console.log('Successful');
+                // })
+                // .catch(err => {
+                //     console.log(err);
+                //     console.log('Something went wrong');
+                // });
             })
     })
     .catch(err => {
@@ -181,7 +182,7 @@ exports.postReset = (req, res, next) => {
             res.redirect('/reset');
         }
         const token = buffer.toString('hex');
-        console.log(token);
+        // console.log(token);
         User.findOne({ email: req.body.email })
         .then(user => {
             if (!user) {
@@ -198,16 +199,17 @@ exports.postReset = (req, res, next) => {
             const subject = 'Password reset';
             const message = `
                             <p>You requested a password reset.</p>
-                            <p>Click this <a href ="http://localhost:3000/reset${token}">link</a> to set a new password.</p>
+                            <p>Click this <a href ="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>
                             <p>Regards,<br/>
                             Abdelhadi</p>`;
-            sesTest(emailTo, emailFrom, subject, message)
-            .then(val => {
-                console.log('got this back', val)
-                console.log('Successful');
-                res.redirect('/');
-            })
+            res.redirect('/');
+            sesTest(emailTo, emailFrom, subject, message);
         })
+        // .then(val => {
+        //     console.log('got this back', val)
+        //     console.log('Successful');
+        //     res.redirect('/');
+        // })
         .catch(err => {
             console.log(err);
         })
@@ -215,9 +217,9 @@ exports.postReset = (req, res, next) => {
 };
 
 exports.getNewPassword = (req, res, next) => {
-    console.log('hello');
+    // console.log('hello');
     const token = req.params.token;
-    console.log(token);
+    // console.log(token);
     User.findOne({resetToken : token, resetTokenExpiration: {$gt: Date.now()}})
     .then(user => {
         let message = req.flash('error');
@@ -230,10 +232,40 @@ exports.getNewPassword = (req, res, next) => {
             path: '/new-password',
             pageTitle: 'New Password',
             errorMessage: message,
-            userId: user._id.toString()
+            userId: user._id.toString(),
+            passwordToken: token
         });
     })
     .catch(err => {
         console.log(err);
     });
-}
+};
+
+exports.postNewPassword = (req, res, next) => {
+    const newPassword = req.body.password;
+    const userId = req.body.userId;
+    const passwordToken = req.body.passwordToken;
+    let resetUser;
+
+    User.findOne({ 
+        resetToken: passwordToken, 
+        resetTokenExpiration: {$gt: Date.now()}, 
+        _id: userId
+    })
+    .then(user => {
+        resetUser = user;
+        return bcrypt.hash(newPassword, 12);
+    })
+    .then(hashedPassword => {
+        resetUser.password = hashedPassword;
+        resetUser.resetToken = undefined;
+        resetUser.resetTokenExpiration = undefined;
+        return resetUser.save();
+    })
+    .then(result => {
+        res.redirect('/login');
+    })
+    .catch(err => {
+        console.log(err);
+    });
+};

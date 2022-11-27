@@ -18,6 +18,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
+  const token = req.params.token;
   // Product.findAll({ where: { id : prodId} }).then(products => {
   //   console.log(products[0]);
   //   res.render('shop/product-detail', {
