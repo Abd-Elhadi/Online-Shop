@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 const aws = require('aws-sdk');
-const user = require('../models/user');
+const { validationResult } = require('express-validator/check')
 
 const ses = new aws.SES({region: "us-east-1"});
 
@@ -74,6 +74,27 @@ exports.getSignup = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
+
+    const errors = validationResult(req);
+    console.log(errors.array())
+    if (!errors.isEmpty()) {
+        return res.status(422).render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            errorMessage: errors.array()[0].msg
+        });
+    }
+
+    // const errors = validationResult(req);
+    // console.log(errors.array());
+    // if (!errors.isEmpty()) {
+    //     return res.render('auth/login', {
+    //         path: '/login',
+    //         pageTitle: 'Login',
+    //         errorMessage: errors.array()[0].msg
+    //     });
+    // }
+
     User.findOne({email: email})
     .then(user => {
         if(!user) {
@@ -101,57 +122,43 @@ exports.postLogin = (req, res, next) => {
     .catch(err => {
         console.log(err);
     })
-  User.findById('5bab316ce0a7c75f783cb8a8')
-    .then(user => {
-      
-    })
-    .catch(err => console.log(err));
 };
 
 exports.postSignup = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
-    const condfirmPassword = req.body.condfirmPassword;
-    User.findOne({email: email})
-    .then(userDoc => {
-        if (userDoc) {
-            req.flash('error', 'Email exists already. Enter a different email.')
-            return res.redirect('/signup');
-        } 
-        return bcrypt
-            .hash(password, 12)
-            .then(hashedPassword => {
-                const user = new User({
-                    email: email,
-                    password: hashedPassword,
-                    cart: { items: [] }
-                });
-                return user.save();    
-            })
-            .then(result => {
-                const emailTo = email;
-                const emailFrom = "abdelhadiomar.coder@hotmail.com";
-                const message = `<p>You successfully signed up!</p>
-                                <br>
-                                <p>Regards,<br/>
-                                Abdelhadi</p>`;
-                const subject = 'Successful signup!';
-                
-                res.redirect('login');
-                sesTest(emailTo, emailFrom, subject, message)
-                // .then(val => {
-                //     console.log('got this back', val)
-                //     console.log('Successful');
-                // })
-                // .catch(err => {
-                //     console.log(err);
-                //     console.log('Something went wrong');
-                // });
-            })
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors.array())
+        return res.status(422).render('auth/signup', {
+            path: '/signup',
+            pageTitle: 'Signup',
+            errorMessage: errors.array()[0].msg
+        });
+    }
+    bcrypt
+    .hash(password, 12)
+    .then(hashedPassword => {
+        const user = new User({
+            email: email,
+            password: hashedPassword,
+            cart: { items: [] }
+        });
+        return user.save();    
     })
-    .catch(err => {
-        console.log(err);
+    .then(result => {
+        const emailTo = email;
+        const emailFrom = "abdelhadiomar.coder@hotmail.com";
+        const message = `<p>You successfully signed up!</p>
+                        <br>
+                        <p>Regards,<br/>
+                        Abdelhadi</p>`;
+        const subject = 'Successful signup!';
+        
+        res.redirect('login');
+        sesTest(emailTo, emailFrom, subject, message)
     })
+
 };
 
 exports.postLogout = (req, res, next) => {
