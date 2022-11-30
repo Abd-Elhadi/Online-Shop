@@ -1,6 +1,13 @@
 const { validationResult } = require('express-validator/check')
+const mongoose = require('mongoose');
 
 const Product = require('../models/product');
+
+const get500Error = (err, next) => {
+  const error = new Error(err);
+  error.httpStatusCode = 500;
+  return next(error);
+}
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -19,6 +26,7 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     console.log(errors.array());
     return res.status(422).render('admin/edit-product', {
@@ -38,6 +46,7 @@ exports.postAddProduct = (req, res, next) => {
   }
 
   const product = new Product({
+    _id: mongoose.Types.ObjectId('63795d371bea26a9b822a4a5'),
     title: title, 
     price: price, 
     description: description, 
@@ -59,7 +68,24 @@ exports.postAddProduct = (req, res, next) => {
       res.redirect('/admin/products');
     })
     .catch(err => {
-      console.log(err)
+      // return res.status(422).render('admin/edit-product', {
+      //   pageTitle: 'Add Product',
+      //   path: '/admin/add-product',
+      //   editing: false,
+      //   hasError: true,
+      //   product: {
+      //     title: title,
+      //     price: price,
+      //     imageUrl: imageUrl,
+      //     description: description
+      //   },
+      //   errorMessage: 'Database operation falied. Please try again.',
+      //   validationErrors: []
+      // });
+      // const error = new Error(err);
+      // error.httpStatusCode = 500;
+      // return next(error);
+      return get500Error(err, next);
     });
 };
 
@@ -69,54 +95,25 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  // Product.findById(prodId, product => {
-  //   if (!product) {
-  //     return res.redirect('/');
-  //   }
-  //   res.render('admin/edit-product', {
-  //     pageTitle: 'Edit Product',
-  //     path: '/admin/edit-product',
-  //     editing: editMode,
-  //     product: product
-  //   });
-  // });
-  // Product.findById(prodId)
-  //   // Product.findByPk(prodId)
-  //   .then(product => {
-  //     // const product = product;
-  //     if (!product) {
-  //       return res.redirect('/');
-  //     }
-  //     res.render('admin/edit-product', {
-  //       pageTitle: 'Edit Product',
-  //       path: '/admin/edit-product',
-  //       editing: editMode,
-  //       product: product
-  //     });
-  //   })
-  //   .catch(err => {
-  //     console.log(err);
-  //   });
-
-    Product.findById(prodId)
-    .then(product => {
-      if (!product) {
-        return res.redirect('/');
-      }
-      // console.log(product);
-      res.render('admin/edit-product', {
-        pageTitle: 'Edit Product',
-        path: '/admin/edit-product',
-        editing: editMode,
-        product: product,
-        hasError: false,
-        errorMessage: null,
-        validationErrors: []
-      });
-    })
-    .catch(err => {
-      console.log(err);
+  Product.findById(prodId)
+  .then(product => {
+    if (!product) {
+      return res.redirect('/');
+    }
+    // console.log(product);
+    res.render('admin/edit-product', {
+      pageTitle: 'Edit Product',
+      path: '/admin/edit-product',
+      editing: editMode,
+      product: product,
+      hasError: false,
+      errorMessage: null,
+      validationErrors: []
     });
+  })
+  .catch(err => {
+    return get500Error(err, next);
+  });
 };
 
 exports.postEditProduct = (req, res, next) => {
