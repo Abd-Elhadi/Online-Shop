@@ -2,6 +2,12 @@ const Product = require('../models/product');
 const Order = require('../models/order');
 const user = require('../models/user');
 
+const get500Error = (err, next) => {
+  const error = new Error(err);
+  error.httpStatusCode = 500;
+  return next(error);
+}
+
 exports.getProducts = (req, res, next) => {
   Product.find()
     .then(products => {
@@ -12,7 +18,7 @@ exports.getProducts = (req, res, next) => {
         path: '/products'
       });
     }).catch(err => {
-      console.log(err);
+      return get500Error(err, next);
     });
 };
 
@@ -39,7 +45,7 @@ exports.getProduct = (req, res, next) => {
       })
     })
     .catch(err => {
-      console.log(err);
+      return get500Error(err, next);
     });
 }
 
@@ -53,7 +59,7 @@ exports.getIndex = (req, res, next) => {
         path: '/'
       });
     }).catch(err => {
-      console.log(err);
+      return get500Error(err, next);
     });
 };
 
@@ -71,7 +77,7 @@ exports.getCart = (req, res, next) => {
         });
     })
     .catch(err => {
-      console.log(err);
+      return get500Error(err, next);
     });
 };
 
@@ -87,7 +93,7 @@ exports.postCart = (req, res, next) => {
     res.redirect('/cart');
   })
   .catch(err => {
-    console.log(err);
+    return get500Error(err, next);
   });
 };
 
@@ -99,7 +105,7 @@ exports.postCartDeleteProduct = (req, res, next) => {
         res.redirect('/cart');
       })
       .catch(err => {
-        console.log(err);
+        return get500Error(err, next);
       });
   // Product.findByPk(prodId, product => {
   //   Cart.deleteProduct(prodId, product.price);
@@ -134,7 +140,7 @@ exports.postOrder = (req, res, next) => {
       res.redirect('/orders');
     })
     .catch(err => {
-      console.log(err);
+      return get500Error(err, next);
     });
 };
 
@@ -149,7 +155,7 @@ exports.getOrders = (req, res, next) => {
     });
   })
   .catch(err => {
-    console.log(err);
+    return get500Error(err, next);
   });
 };
 

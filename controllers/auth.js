@@ -9,6 +9,12 @@ const { validationResult } = require('express-validator/check')
 
 const ses = new aws.SES({region: "us-east-1"});
 
+const get500Error = (err, next) => {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+}
+
 function sesTest(emailTo, emailFrom, subject, message) {
     let params = {
         Destination: {
@@ -143,7 +149,7 @@ exports.postLogin = (req, res, next) => {
         })
     })
     .catch(err => {
-        console.log(err);
+        return get500Error(err, next);
     })
 };
 
@@ -187,7 +193,9 @@ exports.postSignup = (req, res, next) => {
         res.redirect('login');
         sesTest(emailTo, emailFrom, subject, message)
     })
-
+    .catch(err => { 
+        return get500Error(err, next);
+    });
 };
 
 exports.postLogout = (req, res, next) => {
@@ -247,7 +255,7 @@ exports.postReset = (req, res, next) => {
         //     res.redirect('/');
         // })
         .catch(err => {
-            console.log(err);
+            return get500Error(err, next);
         })
     })
 };
@@ -273,7 +281,7 @@ exports.getNewPassword = (req, res, next) => {
         });
     })
     .catch(err => {
-        console.log(err);
+        return get500Error(err, next);
     });
 };
 
@@ -302,6 +310,6 @@ exports.postNewPassword = (req, res, next) => {
         res.redirect('/login');
     })
     .catch(err => {
-        console.log(err);
+        return get500Error(err, next);
     });
 };
